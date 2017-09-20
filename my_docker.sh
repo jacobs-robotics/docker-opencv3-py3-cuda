@@ -4,6 +4,7 @@
 containerName=opencv3-cuda
 containerTag=1.0
 GREEN='\033[1;32m'
+BLUE='\e[34m'
 NC='\033[0m' # no color
 user=`id -u -n`
 userid=`id -u`
@@ -12,9 +13,11 @@ groupid=`id -g`
 
 if [ $1 = "help" ];then
 	echo -e "${GREEN}>>> Possible commands:\n ${NC}"
-	echo -e "opencv [Version] --- Downloads specific OpenCV version from github repo to current dir\n"
-	echo -e "build [Repository Name][Tag] --- Build an image based on DockerFile in current dir, and\nuses the provided name and tag\n"
-	echo -e "create [Conatainer Name][Image Name] --- Instantiates a container based on the given image\n"
+	echo -e "${BLUE}opencv [Version] --- Downloads specific OpenCV version from github repo to current dir${NC}\n"
+	echo -e "${BLUE}build [Repository Name][Tag] --- Build an image based on DockerFile in current dir, and\nuse the provided name and tag${NC}\n"
+	echo -e "${BLUE}start [Container Name] --- Starts an already instantiated container${NC}\n"
+	echo -e "${BLUE}stop [Container Name] --- Stops a running container${NC}\n"
+	echo -e "${BLUE}console [Container Name] --- Gives terminal access (/bin/bash) access to a running container${NC}\n"
 fi
 
 if [ "$1" = "opencv" ]; then
@@ -49,6 +52,7 @@ if [ "$1" = "create" ]; then
         	DRI_ARGS="$DRI_ARGS --privileged"
     	fi
 
+	#publish maps ports between the container and the host. Jupyter notebooks use port 8888 by default
 	nvidia-docker create -it \
         $DRI_ARGS \
         --name="${containerName}" \
