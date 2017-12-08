@@ -34,7 +34,11 @@ if [ "$1" = "build" ]; then
 	repoName=$2
 	imageTag=$3
 	echo -e "${GREEN}>>> Building ${repoName}:${imageTag} image ...${NC}"
-	docker build -t ${user}/${repoName}:${imageTag} .
+	docker build --build-arg user=$user \
+	--build-arg userid=$userid \
+	--build-arg group=$group \
+	--build-arg groupid=$groupid \
+	-t ${user}/${repoName}:${imageTag} .
 fi
 
 if [ "$1" = "create" ]; then

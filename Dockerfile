@@ -11,7 +11,7 @@ ARG groupid
 #update system repos and libraries
 RUN apt-get update -y && apt-get upgrade -y
 #essential extra packages
-RUN apt-get install -y wget unzip vim git cmake
+RUN apt-get install -y wget unzip vim git cmake sudo
 
 #opencv dependencies 1
 RUN apt-get install -y libjpeg8-dev libtiff5-dev libjasper-dev libpng12-dev libavcodec-dev \
@@ -54,6 +54,6 @@ RUN chmod a+x make_opencv.sh
 #Decided to add at the end of the Dockerfile since they are not indispensable
 RUN apt-get install -y net-tools iputils-ping
 RUN /bin/bash -c "echo   >> ./.bashrc" && \
-    /bin/bash -c "echo alias showIP=' ifconfig eth0 | sed -n "2s/[^:]*:\([^ ]*\).*/\1/p" ' >> ./.bashrc" && \
+#    /bin/bash -c "echo alias showIP=' ifconfig eth0 | sed -n "2s/[^:]*:\([^ ]*\).*/\1/p" ' >> ./.bashrc" && \
     /bin/bash -c "echo alias runJupyterNotebook='jupyter notebook --allow-root --ip=172.17.0.2 --port=8888' " && \
     /bin/bash -c ". ./.bashrc"
