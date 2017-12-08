@@ -10,7 +10,7 @@ user=`id -u -n`
 userid=`id -u`
 group=`id -g -n`
 groupid=`id -g`
-myhostname=`hostname`
+myhostname=docker-opencv
 
 if [ $1 = "help" ];then
 	echo -e "${GREEN}>>> Possible commands:\n ${NC}"
@@ -59,7 +59,7 @@ if [ "$1" = "create" ]; then
     	fi
 
 	#publish maps ports between the container and the host. Jupyter notebooks use port 8888 by default
-	docker create -it \
+	docker run --runtime=nvidia -it \
         $DRI_ARGS \
         --user="${userid}" \
 	--name="${containerName}" \
@@ -68,7 +68,7 @@ if [ "$1" = "create" ]; then
 	--publish 8888:8888 \
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
-	--workdir="/home/${user}"
+	--workdir="/home/${user}" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
         --volume=`pwd`/workspace:/home/${user}/workspace \
         ${imageName}
@@ -77,7 +77,7 @@ fi
 if [ $1 = "start" ]; then
 	containerName=$2
 	echo -e "${GREEN}>>> Starting container ${containerName} ...${NC}"
-	docker start $(docker ps -aqf "name=${containerName}")
+	docker start --runtime=nvidia $(docker ps -aqf "name=${containerName}")
 fi
 
 if [ $1 = "stop" ]; then

@@ -1,5 +1,5 @@
 #base image
-FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+FROM nvidia/cuda:8.0-devel-ubuntu16.04
 
 MAINTAINER Arturo Gomez Chavez "a.gomezchavez@jacobs-university.de"
 
@@ -28,32 +28,25 @@ RUN addgroup --gid $groupid $group && \
 	adduser --uid $userid --gid $groupid --shell /bin/bash $user && \
 	echo "$user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$user && \
 	chmod 0440 /etc/sudoers.d/$user
+
 # create initial workspace
 RUN mkdir -p /home/$user/workspace
+RUN chown -R $user:$user /home/$user/workspace
 
-WORKDIR /home/$user
 #install python packages and virtual env. packages
-RUN apt-get install -y python3 python-dev python3-dev python3-pip
-RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py 
+RUN cd /home/$user/ && apt-get install -y python3 python-dev python3-dev python3-pip
+RUN cd /home/$user/ && wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py 
 RUN pip install virtualenv virtualenvwrapper && pip3 install virtualenv virtualenvwrapper
-RUN /bin/bash -c "echo   >> ./.bashrc" && /bin/bash -c "echo # virtualenv and virtualenvwrapper >> ./.bashrc" && \
-    /bin/bash -c "echo export WORKON_HOME=$HOME/.virtualenvs >> ./.bashrc" && \
-    /bin/bash -c "echo source /usr/local/bin/virtualenvwrapper.sh >> ./.bashrc" && \
-    /bin/bash -c ". ./.bashrc"
-
 
 #download opencv from repos
-RUN wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.3.0.zip && unzip opencv.zip
-RUN wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.3.0.zip && unzip opencv_contrib.zip
+RUN cd /home/$user/ && wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.3.0.zip && unzip opencv.zip
+RUN cd /home/$user/ && wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.3.0.zip && unzip opencv_contrib.zip
 
 #copy script to install OpenCV in a virtual environment
-COPY make_opencv.sh .
-RUN chmod a+x make_opencv.sh 
+COPY make_opencv.sh /home/$user/.
+RUN chmod a+rwx /home/$user/make_opencv.sh
+#RUN chmod -R 777 /home/$user
 
 #install network related packages to debug connectivity
 #Decided to add at the end of the Dockerfile since they are not indispensable
 RUN apt-get install -y net-tools iputils-ping
-RUN /bin/bash -c "echo   >> ./.bashrc" && \
-#    /bin/bash -c "echo alias showIP=' ifconfig eth0 | sed -n "2s/[^:]*:\([^ ]*\).*/\1/p" ' >> ./.bashrc" && \
-    /bin/bash -c "echo alias runJupyterNotebook='jupyter notebook --allow-root --ip=172.17.0.2 --port=8888' " && \
-    /bin/bash -c ". ./.bashrc"
