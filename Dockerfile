@@ -1,6 +1,12 @@
 #base image
-FROM nvidia/cuda:8.0-devel-ubuntu16.04
-MAINTAINER arturokkboss33 "a.gomezchavez@jacobs-university.de"
+FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+
+MAINTAINER Arturo Gomez Chavez "a.gomezchavez@jacobs-university.de"
+
+ARG user
+ARG userid
+ARG group
+ARG groupid
 
 #update system repos and libraries
 RUN apt-get update -y && apt-get upgrade -y
@@ -17,27 +23,37 @@ RUN apt-get install -y libopencv-dev checkinstall yasm libdc1394-22-dev libxine2
     libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev \
     v4l-utils ffmpeg qt5-default libhdf5-dev
 
+# set up users and groups
+RUN addgroup --gid $groupid $group && \
+	adduser --uid $userid --gid $groupid --shell /bin/bash $user && \
+	echo "$user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$user && \
+	chmod 0440 /etc/sudoers.d/$user
+# create initial workspace
+RUN mkdir -p /home/$user/workspace
+
+WORKDIR /home/$user
 #install python packages and virtual env. packages
 RUN apt-get install -y python3 python-dev python3-dev python3-pip
-RUN cd /home && wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py 
+RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py 
 RUN pip install virtualenv virtualenvwrapper && pip3 install virtualenv virtualenvwrapper
-RUN /bin/bash -c "echo   >> /root/.bashrc" && /bin/bash -c "echo # virtualenv and virtualenvwrapper >> /root/.bashrc" && \
-    /bin/bash -c "echo export WORKON_HOME=$HOME/.virtualenvs >> /root/.bashrc" && \
-    /bin/bash -c "echo source /usr/local/bin/virtualenvwrapper.sh >> /root/.bashrc" && \
-    /bin/bash -c ". /root/.bashrc"
+RUN /bin/bash -c "echo   >> ./.bashrc" && /bin/bash -c "echo # virtualenv and virtualenvwrapper >> ./.bashrc" && \
+    /bin/bash -c "echo export WORKON_HOME=$HOME/.virtualenvs >> ./.bashrc" && \
+    /bin/bash -c "echo source /usr/local/bin/virtualenvwrapper.sh >> ./.bashrc" && \
+    /bin/bash -c ". ./.bashrc"
+
 
 #download opencv from repos
-RUN cd /home && wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.3.0.zip && unzip opencv.zip
-RUN cd /home && wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.3.0.zip && unzip opencv_contrib.zip
+RUN wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.3.0.zip && unzip opencv.zip
+RUN wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.3.0.zip && unzip opencv_contrib.zip
 
 #copy script to install OpenCV in a virtual environment
-COPY make_opencv.sh /home/.
-RUN chmod a+x /home/make_opencv.sh 
+COPY make_opencv.sh .
+RUN chmod a+x make_opencv.sh 
 
 #install network related packages to debug connectivity
 #Decided to add at the end of the Dockerfile since they are not indispensable
 RUN apt-get install -y net-tools iputils-ping
-RUN /bin/bash -c "echo   >> /root/.bashrc" && \
-    /bin/bash -c "echo alias showIP=' ifconfig eth0 | sed -n "2s/[^:]*:\([^ ]*\).*/\1/p" ' >> /root/.bashrc" && \
+RUN /bin/bash -c "echo   >> ./.bashrc" && \
+    /bin/bash -c "echo alias showIP=' ifconfig eth0 | sed -n "2s/[^:]*:\([^ ]*\).*/\1/p" ' >> ./.bashrc" && \
     /bin/bash -c "echo alias runJupyterNotebook='jupyter notebook --allow-root --ip=172.17.0.2 --port=8888' " && \
-    /bin/bash -c ". /root/.bashrc"
+    /bin/bash -c ". ./.bashrc"
