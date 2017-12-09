@@ -33,7 +33,7 @@ if [ "$1" = "build" ]; then
 	repoName=$2
 	imageTag=$3
 	echo -e "${GREEN}>>> Building ${repoName}:${imageTag} image ...${NC}"
-	build -t ${user}/${repoName}:${imageTag} .
+	docker build -t ${user}/${repoName}:${imageTag} .
 fi
 
 if [ "$1" = "run" ]; then
@@ -54,7 +54,7 @@ if [ "$1" = "run" ]; then
     	fi
 
 	#publish maps ports between the container and the host. Jupyter notebooks use port 8888 by default
-	docker --runtime=nvidia run -it \
+	docker run --runtime=nvidia -it \
         $DRI_ARGS \
         --name="${containerName}" \
         --hostname="${user}-${space}" \

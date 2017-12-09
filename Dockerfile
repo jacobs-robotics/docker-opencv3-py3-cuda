@@ -33,11 +33,9 @@ RUN cd /home && wget -O opencv_contrib.zip https://github.com/Itseez/opencv_cont
 #copy script to install OpenCV in a virtual environment
 COPY make_opencv.sh /home/.
 RUN chmod a+x /home/make_opencv.sh 
+COPY setup_bashrc.sh /home/.
+RUN /bin/bash -c ". /home/setup_bashrc.sh"
 
 #install network related packages to debug connectivity
 #Decided to add at the end of the Dockerfile since they are not indispensable
 RUN apt-get install -y net-tools iputils-ping
-RUN /bin/bash -c "echo   >> /root/.bashrc" && \
-    /bin/bash -c "echo alias showIP=' ifconfig eth0 | sed -n "2s/[^:]*:\([^ ]*\).*/\1/p" ' >> /root/.bashrc" && \
-    /bin/bash -c "echo alias runJupyterNotebook='jupyter notebook --allow-root --ip=172.17.0.2 --port=8888' " && \
-    /bin/bash -c ". /root/.bashrc"
