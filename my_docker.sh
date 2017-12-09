@@ -15,6 +15,7 @@ if [ $1 = "help" ];then
 	echo -e "${GREEN}>>> Possible commands:\n ${NC}"
 	echo -e "${BLUE}opencv [Version] --- Downloads specific OpenCV version from github repo to current dir${NC}\n"
 	echo -e "${BLUE}build [Repository Name][Tag] --- Build an image based on DockerFile in current dir, and\nuse the provided name and tag${NC}\n"
+	echo -e "${BLUE}run [Container name][Image name] --- Create and start container${NC}\n"
 	echo -e "${BLUE}start [Container Name] --- Starts an already instantiated container${NC}\n"
 	echo -e "${BLUE}stop [Container Name] --- Stops a running container${NC}\n"
 	echo -e "${BLUE}console [Container Name] --- Gives terminal access (/bin/bash) access to a running container${NC}\n"
@@ -32,10 +33,10 @@ if [ "$1" = "build" ]; then
 	repoName=$2
 	imageTag=$3
 	echo -e "${GREEN}>>> Building ${repoName}:${imageTag} image ...${NC}"
-	/usr/local/bin/nvidia-docker build -t ${user}/${repoName}:${imageTag} .
+	build -t ${user}/${repoName}:${imageTag} .
 fi
 
-if [ "$1" = "create" ]; then
+if [ "$1" = "run" ]; then
 	
 	containerName=$2
 	imageName=$3
@@ -53,7 +54,7 @@ if [ "$1" = "create" ]; then
     	fi
 
 	#publish maps ports between the container and the host. Jupyter notebooks use port 8888 by default
-	nvidia-docker create -it \
+	docker --runtime=nvidia run -it \
         $DRI_ARGS \
         --name="${containerName}" \
         --hostname="${user}-${space}" \
@@ -62,24 +63,24 @@ if [ "$1" = "create" ]; then
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        --volume=`pwd`/local:/home/local \
+        --volume=`pwd`/workspace:/home/workspace \
         ${imageName}
 fi
 
 if [ $1 = "start" ]; then
 	containerName=$2
 	echo -e "${GREEN}>>> Starting container ${containerName} ...${NC}"
-	nvidia-docker start $(docker ps -aqf "name=${containerName}")
+	docker start $(docker ps -aqf "name=${containerName}")
 fi
 
 if [ $1 = "stop" ]; then
 	containerName=$2
 	echo -e "${GREEN}>>> Stopping container ${containerName} ...${NC}"
-	nvidia-docker stop $(docker ps -aqf "name=${containerName}")
+	docker stop $(docker ps -aqf "name=${containerName}")
 fi
 
 if [ $1 = "console" ]; then
 	containerName=$2
 	echo -e "${GREEN}>>> Entering console in container ${containerName} ...${NC}"
-	nvidia-docker exec -ti ${containerName} /bin/bash 
+	docker exec -ti ${containerName} /bin/bash 
 fi
