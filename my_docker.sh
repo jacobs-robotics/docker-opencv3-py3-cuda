@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # initialize global variables
-containerName=opencv3-cuda
+containerName=opencv3-py3-cuda
 containerTag=1.0
 GREEN='\033[1;32m'
 BLUE='\e[34m'
@@ -10,6 +10,7 @@ user=`id -u -n`
 userid=`id -u`
 group=`id -g -n`
 groupid=`id -g`
+myhostname=docker-opencv
 
 if [ $1 = "help" ];then
 	echo -e "${GREEN}>>> Possible commands:\n ${NC}"
@@ -56,12 +57,14 @@ if [ "$1" = "run" ]; then
 	#publish maps ports between the container and the host. Jupyter notebooks use port 8888 by default
 	docker run --runtime=nvidia -it \
         $DRI_ARGS \
-        --name="${containerName}" \
-        --hostname="${user}-${space}" \
+        --user="${userid}" \
+	--name="${containerName}" \
+        --hostname="${myhostname}" \
         --net=default \
 	--publish 8888:8888 \
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
+	--workdir="/home/${user}" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
         --volume=`pwd`/workspace:/home/workspace \
         ${imageName}
