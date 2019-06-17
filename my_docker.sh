@@ -34,13 +34,13 @@ if [ "$1" = "build" ]; then
 	repoName=$2
 	imageTag=$3
 	echo -e "${GREEN}>>> Building ${repoName}:${imageTag} image ...${NC}"
-	docker build -t ${user}/${repoName}:${imageTag} .
+	docker build --build-arg user=$user --build-arg userid=$userid --build-arg group=$group --build-arg groupid=$groupid -t ${user}/${repoName}:${imageTag} .
 fi
 
 if [ "$1" = "run" ]; then
 	
-	containerName=$2
-	imageName=$3
+	#containerName=$2
+	imageName=$2
 
 	echo -e "${GREEN}>>> Creating container ${containerName} from image ${imageName}...${NC}"
 	
@@ -55,7 +55,7 @@ if [ "$1" = "run" ]; then
     	fi
 
 	#publish maps ports between the container and the host. Jupyter notebooks use port 8888 by default
-	docker run --runtime=nvidia -it \
+	docker run --runtime=nvidia -d -it \
         $DRI_ARGS \
         --user="${userid}" \
 	--name="${containerName}" \
@@ -66,24 +66,24 @@ if [ "$1" = "run" ]; then
         --env="QT_X11_NO_MITSHM=1" \
 	--workdir="/home/${user}" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        --volume=`pwd`/workspace:/home/workspace \
+        --volume=`pwd`/workspace:/home/${user}/workspace \
         ${imageName}
 fi
 
 if [ $1 = "start" ]; then
-	containerName=$2
+	#containerName=$2
 	echo -e "${GREEN}>>> Starting container ${containerName} ...${NC}"
 	docker start $(docker ps -aqf "name=${containerName}")
 fi
 
 if [ $1 = "stop" ]; then
-	containerName=$2
+	#containerName=$2
 	echo -e "${GREEN}>>> Stopping container ${containerName} ...${NC}"
 	docker stop $(docker ps -aqf "name=${containerName}")
 fi
 
 if [ $1 = "console" ]; then
-	containerName=$2
+	#containerName=$2
 	echo -e "${GREEN}>>> Entering console in container ${containerName} ...${NC}"
 	docker exec -ti ${containerName} /bin/bash 
 fi
