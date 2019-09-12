@@ -85,5 +85,5 @@ fi
 if [ $1 = "console" ]; then
 	#containerName=$2
 	echo -e "${GREEN}>>> Entering console in container ${containerName} ...${NC}"
-	docker exec -ti ${containerName} /bin/bash 
+	docker exec -e COLUMNS="`tput cols`" -e LINES="`tput lines`" -ti ${containerName} /bin/bash 
 fi
